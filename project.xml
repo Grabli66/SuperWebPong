@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	<meta title="Super Pong" package="com.rapidfingers.SuperPong" version="0.0.1" company="RapidFingers" />
+	<app main="SuperPongClient" file="SuperPong" />
+
+	<window orientation="landscape" />
+	<window allow-high-dpi="true"/>	
+	<window fps="60"/>	
+	<window width="800" height="600" />
+		
+	<source path="client" />
+	
+	<haxelib name="openfl" />	
+	<haxelib name="actuate" />	
+
+	<haxeflag name="--connect" value="6000"/>
+
+	<assets path="assets/images" rename="images" />
+	<!-- <assets path="assets/fonts" rename="fonts" />
+	<icon path="assets/icons/feathersui-icon.svg"/> -->
+</project>
