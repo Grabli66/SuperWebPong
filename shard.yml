@@ -1,0 +1,23 @@
+name: SuperPong
+version: 0.1.0
+
+# authors:
+#   - name <email@example.com>
+
+# description: |
+#   Short description of SuperPong
+
+dependencies:
+  kemal:
+    github: kemalcr/kemal
+    branch: master
+
+# development_dependencies:
+#   webmock:
+#     github: manastech/webmock.cr
+
+targets:
+  superpongserver:
+    main: server/server.cr
+
+# license: MIT
