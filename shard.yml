@@ -1,4 +1,4 @@
-name: SuperPong
+name: superpongserver
 version: 0.1.0
 
 # authors:
@@ -18,6 +18,6 @@ dependencies:
 
 targets:
   superpongserver:
-    main: server/server.cr
+    main: src/superpongserver.cr
 
 # license: MIT
