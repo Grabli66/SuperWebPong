@@ -868,7 +868,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "8";
+	app.meta.h["build"] = "9";
 	app.meta.h["company"] = "RapidFingers";
 	app.meta.h["file"] = "SuperPong";
 	app.meta.h["name"] = "Super Pong";
@@ -4264,10 +4264,13 @@ openfl_display_Sprite.prototype = $extend(openfl_display_DisplayObjectContainer.
 	,__class__: openfl_display_Sprite
 });
 var SuperPongClient = function() {
+	this.previousTime = 0;
 	openfl_display_Sprite.call(this);
-	var bitmapData = openfl_utils_Assets.getBitmapData("images/background.jpg");
-	var bitmap = new openfl_display_Bitmap(bitmapData);
-	this.addChild(bitmap);
+	this.get_graphics().beginFill(3355443);
+	this.get_graphics().drawRect(0,0,this.stage.stageWidth,this.stage.stageHeight);
+	this.get_graphics().endFill();
+	this.ball = new Ball();
+	this.addChild(this.ball);
 	var ws = new hx_ws_WebSocket("ws://localhost:8080/ws");
 	ws.set_onopen(function() {
 		ws.send(haxe_io_Bytes.ofString("alice bytes"));
@@ -4276,15 +4279,34 @@ var SuperPongClient = function() {
 		if(message._hx_index == 0) {
 			var content = message.content;
 			var radius = content.readUnsignedInt();
-			haxe_Log.trace(radius == null ? "null" : Std.string(UInt.toFloat(radius)),{ fileName : "client/SuperPongClient.hx", lineNumber : 24, className : "SuperPongClient", methodName : "new"});
 		}
 	});
+	this.addEventListener("enterFrame",$bind(this,this.onUpdate));
 };
 $hxClasses["SuperPongClient"] = SuperPongClient;
 SuperPongClient.__name__ = "SuperPongClient";
 SuperPongClient.__super__ = openfl_display_Sprite;
 SuperPongClient.prototype = $extend(openfl_display_Sprite.prototype,{
-	__class__: SuperPongClient
+	onUpdate: function(event) {
+		var currentTime = openfl_Lib.getTimer();
+		var deltaTime = (currentTime - this.previousTime) / 1000.0;
+		this.previousTime = currentTime;
+		var _g = this.ball;
+		_g.set_x(_g.get_x() + this.ball.speedX * deltaTime);
+		var _g = this.ball;
+		_g.set_y(_g.get_y() + this.ball.speedY * deltaTime);
+		if(this.ball.get_x() < 0) {
+			this.ball.set_x(0);
+			this.ball.speedX *= -1;
+		} else if(this.ball.get_x() > this.stage.stageWidth) {
+			this.ball.set_x(this.stage.stageWidth);
+			this.ball.speedX *= -1;
+		}
+		if(this.ball.get_y() < 0 || this.ball.get_y() > this.stage.stageHeight) {
+			this.ball.speedY *= -1;
+		}
+	}
+	,__class__: SuperPongClient
 });
 var DocumentClass = function(current) {
 	current.addChild(this);
@@ -4296,6 +4318,20 @@ DocumentClass.__name__ = "DocumentClass";
 DocumentClass.__super__ = SuperPongClient;
 DocumentClass.prototype = $extend(SuperPongClient.prototype,{
 	__class__: DocumentClass
+});
+var Ball = function() {
+	this.speedY = Ball.DEFAULT_SPEED;
+	this.speedX = Ball.DEFAULT_SPEED;
+	openfl_display_Sprite.call(this);
+	this.get_graphics().beginFill(16777215);
+	this.get_graphics().drawCircle(0,0,20);
+	this.get_graphics().endFill();
+};
+$hxClasses["Ball"] = Ball;
+Ball.__name__ = "Ball";
+Ball.__super__ = openfl_display_Sprite;
+Ball.prototype = $extend(openfl_display_Sprite.prototype,{
+	__class__: Ball
 });
 var EReg = function(r,opt) {
 	this.r = new RegExp(r,opt.split("u").join(""));
@@ -62717,6 +62753,7 @@ openfl_display_DisplayObject.__tempStack = new lime_utils_ObjectPool(function() 
 },function(stack) {
 	stack.set_length(0);
 });
+Ball.DEFAULT_SPEED = 100;
 haxe_Serializer.USE_CACHE = false;
 haxe_Serializer.USE_ENUM_INDEX = false;
 haxe_Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
