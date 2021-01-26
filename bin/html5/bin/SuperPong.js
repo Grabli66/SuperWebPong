@@ -868,7 +868,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "3";
+	app.meta.h["build"] = "7";
 	app.meta.h["company"] = "RapidFingers";
 	app.meta.h["file"] = "SuperPong";
 	app.meta.h["name"] = "Super Pong";
@@ -4268,6 +4268,13 @@ var SuperPongClient = function() {
 	var bitmapData = openfl_utils_Assets.getBitmapData("images/background.jpg");
 	var bitmap = new openfl_display_Bitmap(bitmapData);
 	this.addChild(bitmap);
+	var ws = new hx_ws_WebSocket("ws://localhost:8080/ws");
+	ws.set_onopen(function() {
+		ws.send(haxe_io_Bytes.ofString("alice bytes"));
+	});
+	ws.set_onmessage(function(x) {
+		haxe_Log.trace(x,{ fileName : "client/SuperPongClient.hx", lineNumber : 20, className : "SuperPongClient", methodName : "new"});
+	});
 };
 $hxClasses["SuperPongClient"] = SuperPongClient;
 SuperPongClient.__name__ = "SuperPongClient";
@@ -7260,6 +7267,256 @@ haxe_zip_Reader.prototype = {
 		return l;
 	}
 	,__class__: haxe_zip_Reader
+};
+var hx_ws_Buffer = function() {
+	this.chunks = [];
+	this.currentData = null;
+	this.currentOffset = 0;
+	this.length = 0;
+	this.available = 0;
+};
+$hxClasses["hx.ws.Buffer"] = hx_ws_Buffer;
+hx_ws_Buffer.__name__ = "hx.ws.Buffer";
+hx_ws_Buffer.prototype = {
+	writeByte: function(v) {
+		var b = new haxe_io_Bytes(new ArrayBuffer(1));
+		b.b[0] = v & 255;
+		this.writeBytes(b);
+	}
+	,writeShort: function(v) {
+		var b = new haxe_io_Bytes(new ArrayBuffer(2));
+		b.b[0] = v >> 8 & 255 & 255;
+		b.b[1] = v & 255 & 255;
+		this.writeBytes(b);
+	}
+	,writeInt: function(v) {
+		var b = new haxe_io_Bytes(new ArrayBuffer(4));
+		b.b[0] = v >> 24 & 255 & 255;
+		b.b[1] = v >> 16 & 255 & 255;
+		b.b[2] = v >> 8 & 255 & 255;
+		b.b[3] = v & 255 & 255;
+		this.writeBytes(b);
+	}
+	,writeBytes: function(data) {
+		this.chunks.push(data);
+		this.available += data.length;
+		this.length = this.available;
+	}
+	,readAllAvailableBytes: function() {
+		return this.readBytes(this.available);
+	}
+	,readLine: function() {
+		var bytes = this.readUntil("\n");
+		if(bytes == null) {
+			return null;
+		}
+		return StringTools.trim(bytes.toString());
+	}
+	,readLinesUntil: function(delimiter) {
+		var bytes = this.readUntil(delimiter);
+		if(bytes == null) {
+			return null;
+		}
+		return StringTools.trim(bytes.toString()).split("\n");
+	}
+	,readUntil: function(delimiter) {
+		var dl = delimiter.length;
+		var _g = 0;
+		var _g1 = this.available - dl;
+		while(_g < _g1) {
+			var i = _g++;
+			var matched = true;
+			var _g2 = 0;
+			var _g3 = dl;
+			while(_g2 < _g3) {
+				var j = _g2++;
+				if(this.peekByte(this.currentOffset + i + j + 1) == HxOverrides.cca(delimiter,j)) {
+					continue;
+				}
+				matched = false;
+				break;
+			}
+			if(matched) {
+				var bytes = this.readBytes(i + dl + 1);
+				return bytes;
+			}
+		}
+		return null;
+	}
+	,readBytes: function(count) {
+		var count2 = Math.min(count,this.available) | 0;
+		var out = new haxe_io_Bytes(new ArrayBuffer(count2));
+		var _g = 0;
+		var _g1 = count2;
+		while(_g < _g1) {
+			var n = _g++;
+			var v = this.readByte();
+			out.b[n] = v & 255;
+		}
+		return out;
+	}
+	,readUnsignedShort: function() {
+		var h = this.readByte();
+		var l = this.readByte();
+		return h << 8 | l;
+	}
+	,readUnsignedInt: function() {
+		var v3 = this.readByte();
+		var v2 = this.readByte();
+		var v1 = this.readByte();
+		var v0 = this.readByte();
+		return v3 << 24 | v2 << 16 | v1 << 8 | v0;
+	}
+	,readByte: function() {
+		if(this.available <= 0) {
+			throw haxe_Exception.thrown("No bytes available");
+		}
+		while(this.currentData == null || this.currentOffset >= this.currentData.length) {
+			this.currentOffset = 0;
+			this.currentData = this.chunks.shift();
+		}
+		this.available--;
+		this.length = this.available;
+		return this.currentData.b[this.currentOffset++];
+	}
+	,peekByte: function(offset) {
+		if(this.available <= 0) {
+			throw haxe_Exception.thrown("No bytes available");
+		}
+		var tempOffset = offset;
+		var tempData = this.chunks[0];
+		if(tempData == null) {
+			tempData = this.currentData;
+		}
+		var chunkIndex = 0;
+		while(tempOffset >= tempData.length) {
+			tempOffset -= tempData.length;
+			++chunkIndex;
+			tempData = this.chunks[chunkIndex];
+		}
+		return tempData.b[tempOffset];
+	}
+	,peekUntil: function(byte) {
+		var tempOffset = this.currentOffset;
+		var tempData = this.chunks[0];
+		if(tempData == null) {
+			tempData = this.currentData;
+		}
+		var chunkIndex = 0;
+		while(tempOffset >= tempData.length) {
+			tempOffset -= tempData.length;
+			++chunkIndex;
+			tempData = this.chunks[chunkIndex];
+		}
+		while(tempOffset < tempData.length) {
+			if(tempData.b[tempOffset] == byte) {
+				return tempOffset + 1;
+			}
+			++tempOffset;
+		}
+		return -1;
+	}
+	,endsWith: function(e) {
+		var i = this.available - e.length;
+		var n = this.currentOffset;
+		while(i < this.available) {
+			if(this.peekByte(i) != HxOverrides.cca(e,n)) {
+				return false;
+			}
+			++i;
+			++n;
+		}
+		return true;
+	}
+	,__class__: hx_ws_Buffer
+};
+var hx_ws_MessageType = $hxEnums["hx.ws.MessageType"] = { __ename__ : "hx.ws.MessageType", __constructs__ : ["BytesMessage","StrMessage"]
+	,BytesMessage: ($_=function(content) { return {_hx_index:0,content:content,__enum__:"hx.ws.MessageType",toString:$estr}; },$_.__params__ = ["content"],$_)
+	,StrMessage: ($_=function(content) { return {_hx_index:1,content:content,__enum__:"hx.ws.MessageType",toString:$estr}; },$_.__params__ = ["content"],$_)
+};
+var hx_ws_WebSocket = function(url,immediateOpen) {
+	if(immediateOpen == null) {
+		immediateOpen = true;
+	}
+	this._onmessage = null;
+	this._ws = null;
+	this._url = url;
+	if(immediateOpen) {
+		this.open();
+	}
+	this.set_binaryType("arraybuffer");
+};
+$hxClasses["hx.ws.WebSocket"] = hx_ws_WebSocket;
+hx_ws_WebSocket.__name__ = "hx.ws.WebSocket";
+hx_ws_WebSocket.prototype = {
+	open: function() {
+		if(this._ws != null) {
+			throw haxe_Exception.thrown("Socket already connected");
+		}
+		this._ws = new WebSocket(this._url);
+	}
+	,get_onopen: function() {
+		return this._ws.onopen;
+	}
+	,set_onopen: function(value) {
+		this._ws.onopen = value;
+		return value;
+	}
+	,get_onclose: function() {
+		return this._ws.onclose;
+	}
+	,set_onclose: function(value) {
+		this._ws.onclose = value;
+		return value;
+	}
+	,get_onerror: function() {
+		return this._ws.onerror;
+	}
+	,set_onerror: function(value) {
+		this._ws.onerror = value;
+		return value;
+	}
+	,get_onmessage: function() {
+		return this._onmessage;
+	}
+	,set_onmessage: function(value) {
+		var _gthis = this;
+		this._onmessage = value;
+		this._ws.onmessage = function(message) {
+			if(_gthis._onmessage != null) {
+				if(((message.data) instanceof ArrayBuffer)) {
+					var buffer = new hx_ws_Buffer();
+					buffer.writeBytes(haxe_io_Bytes.ofData(message.data));
+					_gthis._onmessage(hx_ws_MessageType.BytesMessage(buffer));
+				} else {
+					_gthis._onmessage(hx_ws_MessageType.StrMessage(message.data));
+				}
+			}
+		};
+		return value;
+	}
+	,get_binaryType: function() {
+		return this._ws.binaryType;
+	}
+	,set_binaryType: function(value) {
+		this._ws.binaryType = value;
+		return value;
+	}
+	,close: function() {
+		this._ws.close();
+	}
+	,send: function(msg) {
+		if(((msg) instanceof haxe_io_Bytes)) {
+			var bytes = js_Boot.__cast(msg , haxe_io_Bytes);
+			this._ws.send(bytes.b.bufferValue);
+		} else if(((msg) instanceof hx_ws_Buffer)) {
+			var buffer = js_Boot.__cast(msg , hx_ws_Buffer);
+			this._ws.send(buffer.readAllAvailableBytes().b.bufferValue);
+		} else {
+			this._ws.send(msg);
+		}
+	}
+	,__class__: hx_ws_WebSocket
 };
 var js_Boot = function() { };
 $hxClasses["js.Boot"] = js_Boot;
@@ -22717,7 +22974,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 500281;
+	this.version = 144929;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";

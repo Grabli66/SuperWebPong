@@ -12,6 +12,7 @@
 	
 	<haxelib name="openfl" />	
 	<haxelib name="actuate" />	
+	<haxelib name="hxWebSockets" />	
 
 	<haxeflag name="--connect" value="6000"/>
 

@@ -7,6 +7,8 @@
 -D lime=7.8.0
 -cp /home/grabli66/haxelib/actuate/1,8,9/src
 -D actuate=1.8.9
+-cp /home/grabli66/haxelib/hxWebSockets/1,4,0
+-D hxWebSockets=1.4.0
 -cp client
 -cp /home/grabli66/haxelib/openfl/9,0,2/packages/application/src
 -cp /home/grabli66/haxelib/openfl/9,0,2/packages/assets/src
