@@ -145,7 +145,7 @@ class Game
           @ball.speedy *= -1
         end
 
-        @ball.state_to_io(io, IO::ByteFormat::LittleEndian)
+        @ball.state_to_io(io, IO::ByteFormat::BigEndian)
         @player_one.not_nil!.socket.send(io.to_slice)
 
         # Двигает игроков

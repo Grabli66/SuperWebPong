@@ -868,7 +868,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "7";
+	app.meta.h["build"] = "8";
 	app.meta.h["company"] = "RapidFingers";
 	app.meta.h["file"] = "SuperPong";
 	app.meta.h["name"] = "Super Pong";
@@ -4272,8 +4272,12 @@ var SuperPongClient = function() {
 	ws.set_onopen(function() {
 		ws.send(haxe_io_Bytes.ofString("alice bytes"));
 	});
-	ws.set_onmessage(function(x) {
-		haxe_Log.trace(x,{ fileName : "client/SuperPongClient.hx", lineNumber : 20, className : "SuperPongClient", methodName : "new"});
+	ws.set_onmessage(function(message) {
+		if(message._hx_index == 0) {
+			var content = message.content;
+			var radius = content.readUnsignedInt();
+			haxe_Log.trace(radius == null ? "null" : Std.string(UInt.toFloat(radius)),{ fileName : "client/SuperPongClient.hx", lineNumber : 24, className : "SuperPongClient", methodName : "new"});
+		}
 	});
 };
 $hxClasses["SuperPongClient"] = SuperPongClient;
