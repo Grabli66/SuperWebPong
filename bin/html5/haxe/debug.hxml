@@ -1,10 +1,15 @@
 -main ApplicationMain 
+-cp /home/grabli66/haxelib/flixel/4,8,1
+-D flixel=4.8.1
 --macro openfl._internal.ExtraParams.include()
 -cp /home/grabli66/haxelib/openfl/9,0,2/lib
 -D openfl=9.0.2
 --macro lime._internal.macros.DefineMacro.run()
 -cp /home/grabli66/haxelib/lime/7,8,0/src
 -D lime=7.8.0
+--macro keep('IntIterator')
+-cp /home/grabli66/haxelib/hscript/2,4,0
+-D hscript=2.4.0
 -cp /home/grabli66/haxelib/actuate/1,8,9/src
 -D actuate=1.8.9
 -cp /home/grabli66/haxelib/hxWebSockets/1,4,0
@@ -63,6 +68,7 @@
 -D html5
 -D web
 --remap flash:openfl
+--macro flixel.system.macros.FlxDefines.run()
 --connect 6000
 -js bin/html5/bin/SuperPong.js
 -cp bin/html5/haxe

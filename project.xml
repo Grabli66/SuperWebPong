@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
 	<meta title="Super Pong" package="com.rapidfingers.SuperPong" version="0.0.1" company="RapidFingers" />
-	<app main="SuperPongClient" file="SuperPong" />
+	<app main="Main" file="SuperPong" />
 
 	<window orientation="landscape" />
 	<window allow-high-dpi="true"/>	
 	<window fps="60"/>	
-	<window width="800" height="600" />
+	<window width="800" height="600" background="#333333" />	
 		
 	<source path="client" />
 	
-	<haxelib name="openfl" />	
+	<haxelib name="flixel" />	
 	<haxelib name="actuate" />	
 	<haxelib name="hxWebSockets" />	
 

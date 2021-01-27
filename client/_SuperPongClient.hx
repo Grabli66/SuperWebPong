@@ -1,3 +1,4 @@
+import openfl.events.KeyboardEvent;
 import openfl.Lib;
 import openfl.events.Event;
 import hx.ws.Types.MessageType;
@@ -5,13 +6,20 @@ import haxe.io.Bytes;
 import hx.ws.WebSocket;
 import openfl.display.Sprite;
 
-class SuperPongClient extends Sprite {
+class _SuperPongClient extends Sprite {
 	/// Предыдущее время
 	var previousTime:Int = 0;
 
 	/// Шарик
 	var ball:Ball;
 
+	/// Игрок 1
+	var playerOne:Player;
+
+	/// Игрок 2
+	var playerTwo:Player;
+
+	/// Конструктор
 	public function new() {
 		super();
 
@@ -28,6 +36,11 @@ class SuperPongClient extends Sprite {
 		ball.y = 0;
 		addChild(ball);
 
+		playerOne = new Player();
+		playerOne.x = 10;
+		playerOne.y = (stage.stageHeight / 2) - (playerOne.height / 2);
+		addChild(playerOne);
+
 		var ws = new WebSocket("ws://localhost:8080/ws");
 		ws.onopen = function() {
 			ws.send(Bytes.ofString("alice bytes"));
@@ -42,8 +55,9 @@ class SuperPongClient extends Sprite {
 			}
 		}
 
-		this.addEventListener(Event.ENTER_FRAME, onUpdate);
+		this.addEventListener(Event.ENTER_FRAME, onUpdate);		
 	}
+
 
 	/// Вызывается при обновлении кадра
 	function onUpdate(event:Event):Void {
