@@ -24,6 +24,8 @@ class SuperPongClient extends Sprite {
 		this.graphics.endFill();
 
 		ball = new Ball();
+		ball.x = 0;
+		ball.y = 0;
 		addChild(ball);
 
 		var ws = new WebSocket("ws://localhost:8080/ws");
@@ -35,7 +37,7 @@ class SuperPongClient extends Sprite {
 			switch (message) {
 				case BytesMessage(content):
 					var radius = content.readUnsignedInt();
-					//trace(radius);
+				// trace(radius);
 				default:
 			}
 		}
@@ -55,12 +57,16 @@ class SuperPongClient extends Sprite {
 		if (ball.x < 0) {
 			ball.x = 0;
 			ball.speedX *= -1;
-		} else if (ball.x > stage.stageWidth) {
-			ball.x = stage.stageWidth;
+		} else if (ball.x + ball.width > stage.stageWidth) {
+			ball.x = stage.stageWidth - ball.width;
 			ball.speedX *= -1;
 		}
 
-		if ((ball.y < 0) || (ball.y > stage.stageHeight)) {
+		if (ball.y < 0) {
+			ball.y = 0;
+			ball.speedY *= -1;
+		} else if (ball.y + ball.width > stage.stageHeight) {
+			ball.y = stage.stageHeight - ball.height;
 			ball.speedY *= -1;
 		}
 	}

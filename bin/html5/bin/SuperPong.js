@@ -868,7 +868,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "9";
+	app.meta.h["build"] = "10";
 	app.meta.h["company"] = "RapidFingers";
 	app.meta.h["file"] = "SuperPong";
 	app.meta.h["name"] = "Super Pong";
@@ -4270,6 +4270,8 @@ var SuperPongClient = function() {
 	this.get_graphics().drawRect(0,0,this.stage.stageWidth,this.stage.stageHeight);
 	this.get_graphics().endFill();
 	this.ball = new Ball();
+	this.ball.set_x(0);
+	this.ball.set_y(0);
 	this.addChild(this.ball);
 	var ws = new hx_ws_WebSocket("ws://localhost:8080/ws");
 	ws.set_onopen(function() {
@@ -4298,11 +4300,15 @@ SuperPongClient.prototype = $extend(openfl_display_Sprite.prototype,{
 		if(this.ball.get_x() < 0) {
 			this.ball.set_x(0);
 			this.ball.speedX *= -1;
-		} else if(this.ball.get_x() > this.stage.stageWidth) {
-			this.ball.set_x(this.stage.stageWidth);
+		} else if(this.ball.get_x() + this.ball.get_width() > this.stage.stageWidth) {
+			this.ball.set_x(this.stage.stageWidth - this.ball.get_width());
 			this.ball.speedX *= -1;
 		}
-		if(this.ball.get_y() < 0 || this.ball.get_y() > this.stage.stageHeight) {
+		if(this.ball.get_y() < 0) {
+			this.ball.set_y(0);
+			this.ball.speedY *= -1;
+		} else if(this.ball.get_y() + this.ball.get_width() > this.stage.stageHeight) {
+			this.ball.set_y(this.stage.stageHeight - this.ball.get_height());
 			this.ball.speedY *= -1;
 		}
 	}
@@ -4322,10 +4328,13 @@ DocumentClass.prototype = $extend(SuperPongClient.prototype,{
 var Ball = function() {
 	this.speedY = Ball.DEFAULT_SPEED;
 	this.speedX = Ball.DEFAULT_SPEED;
+	this.radius = Ball.DEFAULT_RADIUS;
 	openfl_display_Sprite.call(this);
 	this.get_graphics().beginFill(16777215);
-	this.get_graphics().drawCircle(0,0,20);
+	this.get_graphics().drawCircle(this.radius,this.radius,this.radius);
 	this.get_graphics().endFill();
+	this.set_width(this.radius * 2);
+	this.set_height(this.radius * 2);
 };
 $hxClasses["Ball"] = Ball;
 Ball.__name__ = "Ball";
@@ -23014,7 +23023,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 144929;
+	this.version = 166963;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
@@ -62754,6 +62763,7 @@ openfl_display_DisplayObject.__tempStack = new lime_utils_ObjectPool(function() 
 	stack.set_length(0);
 });
 Ball.DEFAULT_SPEED = 100;
+Ball.DEFAULT_RADIUS = 10;
 haxe_Serializer.USE_CACHE = false;
 haxe_Serializer.USE_ENUM_INDEX = false;
 haxe_Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
