@@ -1,13 +1,14 @@
+import flixel.util.FlxSpriteUtil;
+import flixel.util.FlxColor;
+import flixel.FlxSprite;
 import openfl.display.Sprite;
 
 /// Игрок
-class Player extends Sprite {
+class Player extends FlxSprite {
 	/// Конструктор
 	public function new() {
 		super();
 
-		this.graphics.beginFill(0xffffff);
-		this.graphics.drawRect(0, 0, 20, 60);
-		this.graphics.endFill();
+		makeGraphic(20, 60, FlxColor.WHITE);
 	}
 }

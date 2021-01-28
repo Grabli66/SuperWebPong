@@ -5,7 +5,7 @@ import flixel.FlxSprite;
 /// Шарик для игры
 class Ball extends FlxSprite {
 	/// Скорость по умолчанию
-	public static final DEFAULT_SPEED = 100;
+	public static final DEFAULT_SPEED = 150;
 
 	/// Радиус по умолчанию
 	public static final DEFAULT_RADIUS = 10;

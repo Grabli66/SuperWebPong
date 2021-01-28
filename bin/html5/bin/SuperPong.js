@@ -893,7 +893,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "12";
+	app.meta.h["build"] = "13";
 	app.meta.h["company"] = "RapidFingers";
 	app.meta.h["file"] = "SuperPong";
 	app.meta.h["name"] = "Super Pong";
@@ -7867,14 +7867,9 @@ GameState.prototype = $extend(flixel_FlxState.prototype,{
 	width: null
 	,height: null
 	,ball: null
-	,create: function() {
-		flixel_FlxState.prototype.create.call(this);
-		this.set_bgColor(3355443);
-		this.ball = new Ball();
-		this.add(this.ball);
-	}
-	,update: function(elapsed) {
-		flixel_FlxState.prototype.update.call(this,elapsed);
+	,player: null
+	,enemy: null
+	,moveBall: function(elapsed) {
 		var _g = this.ball;
 		_g.set_x(_g.x + this.ball.speedX * elapsed);
 		var _g = this.ball;
@@ -7893,6 +7888,52 @@ GameState.prototype = $extend(flixel_FlxState.prototype,{
 			this.ball.set_y(this.height - this.ball.get_height());
 			this.ball.speedY *= -1;
 		}
+		if(this.ball.x < this.player.x + this.player.get_width() && this.ball.y >= this.player.y && this.ball.y <= this.player.y + this.player.get_height()) {
+			this.ball.set_x(this.player.x + this.player.get_width());
+			this.ball.speedX *= -1;
+		}
+	}
+	,movePlayer: function(elapsed) {
+		var _this = flixel_FlxG.keys.pressed;
+		if(_this.keyManager.checkStatus(87,_this.status)) {
+			var _g = this.player;
+			_g.set_y(_g.y - 200 * elapsed);
+		} else {
+			var _this = flixel_FlxG.keys.pressed;
+			if(_this.keyManager.checkStatus(83,_this.status)) {
+				var _g = this.player;
+				_g.set_y(_g.y + 200 * elapsed);
+			}
+		}
+		if(this.player.y < 0) {
+			this.player.set_y(0);
+		} else if(this.player.y + this.player.get_height() > this.height) {
+			this.player.set_y(this.height - this.player.get_height());
+		}
+	}
+	,create: function() {
+		flixel_FlxState.prototype.create.call(this);
+		this.set_bgColor(3355443);
+		this.width = flixel_FlxG.width;
+		this.height = flixel_FlxG.height;
+		var text = new flixel_text_FlxText(0,0,0,"0 : 0",16);
+		text.screenCenter(flixel_util_FlxAxes.X);
+		this.add(text);
+		this.ball = new Ball();
+		this.ball.set_x(this.width / 2 - this.ball.get_width() / 2);
+		this.ball.set_y(this.height / 2 - this.ball.get_height() / 2);
+		this.ball.speedX *= Math.random() >= 0.5 ? 1 : -1;
+		this.ball.speedY *= Math.random() >= 0.5 ? 1 : -1;
+		this.add(this.ball);
+		this.player = new Player();
+		this.player.set_x(10);
+		this.player.set_y(this.height / 2 - this.player.get_height() / 2);
+		this.add(this.player);
+	}
+	,update: function(elapsed) {
+		flixel_FlxState.prototype.update.call(this,elapsed);
+		this.moveBall(elapsed);
+		this.movePlayer(elapsed);
 	}
 	,onResize: function(width,height) {
 		this.width = width;
@@ -8344,6 +8385,16 @@ _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf.prototype = $extend(openfl
 	__class__: _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf
 });
 Math.__name__ = "Math";
+var Player = function() {
+	flixel_FlxSprite.call(this);
+	this.makeGraphic(20,60,-1);
+};
+$hxClasses["Player"] = Player;
+Player.__name__ = "Player";
+Player.__super__ = flixel_FlxSprite;
+Player.prototype = $extend(flixel_FlxSprite.prototype,{
+	__class__: Player
+});
 var Reflect = function() { };
 $hxClasses["Reflect"] = Reflect;
 Reflect.__name__ = "Reflect";
@@ -117789,7 +117840,7 @@ flixel_FlxObject._secondSeparateFlxRect = (function($this) {
 	$r = rect;
 	return $r;
 }(this));
-Ball.DEFAULT_SPEED = 100;
+Ball.DEFAULT_SPEED = 150;
 Ball.DEFAULT_RADIUS = 10;
 openfl_text_Font.__fontByName = new haxe_ds_StringMap();
 openfl_text_Font.__registeredFonts = [];
