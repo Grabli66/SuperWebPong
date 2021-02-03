@@ -18,14 +18,14 @@ class GameState extends FlxState {
 	var player:Player;
 
 	/// Игрок 2
-	var enemy:Player;
+	var enemy:Enemy;
 
 	/// Двигает шарик
 	function moveBall(elapsed:Float) {
 		ball.x += ball.speedX * elapsed;
 		ball.y += ball.speedY * elapsed;
 
-		// Столокновения со стеной
+		// Столокновения со стенами
 		if (ball.x < 0) {
 			ball.x = 0;
 			ball.speedX *= -1;
@@ -42,8 +42,15 @@ class GameState extends FlxState {
 			ball.speedY *= -1;
 		}
 
+		// Столкновение с игроком
 		if ((ball.x < player.x + player.width) && (ball.y >= player.y) && (ball.y <= player.y + player.height)) {
 			ball.x = player.x + player.width;
+			ball.speedX *= -1;
+		}
+
+		// Столкновение с соперником
+		if ((ball.x + ball.width > enemy.x) && (ball.y >= enemy.y) && (ball.y <= enemy.y + enemy.height)) {
+			ball.x = enemy.x - ball.width;
 			ball.speedX *= -1;
 		}
 	}
@@ -60,6 +67,21 @@ class GameState extends FlxState {
 			player.y = 0;
 		} else if (player.y + player.height > height) {
 			player.y = height - player.height;
+		}
+	}
+
+	/// Двигает соперника
+	function moveEnemy(elapsed:Float) {
+		if (FlxG.keys.pressed.UP) {
+			enemy.y -= 200 * elapsed;
+		} else if (FlxG.keys.pressed.DOWN) {
+			enemy.y += 200 * elapsed;
+		}
+
+		if (enemy.y < 0) {
+			enemy.y = 0;
+		} else if (enemy.y + enemy.height > height) {
+			enemy.y = height - enemy.height;
 		}
 	}
 
@@ -81,10 +103,17 @@ class GameState extends FlxState {
 		ball.speedY *= Math.random() >= 0.5 ? 1 : -1;
 		add(ball);
 
+		final PADDING_X = 10;
+
 		player = new Player();
-		player.x = 10;
+		player.x = PADDING_X;
 		player.y = (height / 2) - (player.height / 2);
 		add(player);
+
+		enemy = new Enemy();
+		enemy.x = (width - enemy.width) - PADDING_X;
+		enemy.y = (height / 2) - (enemy.height / 2);
+		add(enemy);
 	}
 
 	/// Обновляет логику
@@ -92,6 +121,7 @@ class GameState extends FlxState {
 		super.update(elapsed);
 		moveBall(elapsed);
 		movePlayer(elapsed);
+		moveEnemy(elapsed);
 	}
 
 	override function onResize(width:Int, height:Int) {

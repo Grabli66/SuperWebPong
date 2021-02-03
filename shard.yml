@@ -18,6 +18,6 @@ dependencies:
 
 targets:
   superpongserver:
-    main: src/superpongserver.cr
+    main: server/superpongserver.cr
 
 # license: MIT

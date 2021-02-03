@@ -893,7 +893,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "13";
+	app.meta.h["build"] = "14";
 	app.meta.h["company"] = "RapidFingers";
 	app.meta.h["file"] = "SuperPong";
 	app.meta.h["name"] = "Super Pong";
@@ -7217,6 +7217,25 @@ EReg.prototype = {
 	}
 	,__class__: EReg
 };
+var Racket = function() {
+	flixel_FlxSprite.call(this);
+	this.makeGraphic(20,60,-1);
+};
+$hxClasses["Racket"] = Racket;
+Racket.__name__ = "Racket";
+Racket.__super__ = flixel_FlxSprite;
+Racket.prototype = $extend(flixel_FlxSprite.prototype,{
+	__class__: Racket
+});
+var Enemy = function() {
+	Racket.call(this);
+};
+$hxClasses["Enemy"] = Enemy;
+Enemy.__name__ = "Enemy";
+Enemy.__super__ = Racket;
+Enemy.prototype = $extend(Racket.prototype,{
+	__class__: Enemy
+});
 var flixel_group_FlxTypedGroup = function(MaxSize) {
 	if(MaxSize == null) {
 		MaxSize = 0;
@@ -7892,6 +7911,10 @@ GameState.prototype = $extend(flixel_FlxState.prototype,{
 			this.ball.set_x(this.player.x + this.player.get_width());
 			this.ball.speedX *= -1;
 		}
+		if(this.ball.x + this.ball.get_width() > this.enemy.x && this.ball.y >= this.enemy.y && this.ball.y <= this.enemy.y + this.enemy.get_height()) {
+			this.ball.set_x(this.enemy.x - this.ball.get_width());
+			this.ball.speedX *= -1;
+		}
 	}
 	,movePlayer: function(elapsed) {
 		var _this = flixel_FlxG.keys.pressed;
@@ -7911,6 +7934,24 @@ GameState.prototype = $extend(flixel_FlxState.prototype,{
 			this.player.set_y(this.height - this.player.get_height());
 		}
 	}
+	,moveEnemy: function(elapsed) {
+		var _this = flixel_FlxG.keys.pressed;
+		if(_this.keyManager.checkStatus(38,_this.status)) {
+			var _g = this.enemy;
+			_g.set_y(_g.y - 200 * elapsed);
+		} else {
+			var _this = flixel_FlxG.keys.pressed;
+			if(_this.keyManager.checkStatus(40,_this.status)) {
+				var _g = this.enemy;
+				_g.set_y(_g.y + 200 * elapsed);
+			}
+		}
+		if(this.enemy.y < 0) {
+			this.enemy.set_y(0);
+		} else if(this.enemy.y + this.enemy.get_height() > this.height) {
+			this.enemy.set_y(this.height - this.enemy.get_height());
+		}
+	}
 	,create: function() {
 		flixel_FlxState.prototype.create.call(this);
 		this.set_bgColor(3355443);
@@ -7925,15 +7966,21 @@ GameState.prototype = $extend(flixel_FlxState.prototype,{
 		this.ball.speedX *= Math.random() >= 0.5 ? 1 : -1;
 		this.ball.speedY *= Math.random() >= 0.5 ? 1 : -1;
 		this.add(this.ball);
+		var PADDING_X = 10;
 		this.player = new Player();
-		this.player.set_x(10);
+		this.player.set_x(PADDING_X);
 		this.player.set_y(this.height / 2 - this.player.get_height() / 2);
 		this.add(this.player);
+		this.enemy = new Enemy();
+		this.enemy.set_x(this.width - this.enemy.get_width() - PADDING_X);
+		this.enemy.set_y(this.height / 2 - this.enemy.get_height() / 2);
+		this.add(this.enemy);
 	}
 	,update: function(elapsed) {
 		flixel_FlxState.prototype.update.call(this,elapsed);
 		this.moveBall(elapsed);
 		this.movePlayer(elapsed);
+		this.moveEnemy(elapsed);
 	}
 	,onResize: function(width,height) {
 		this.width = width;
@@ -8386,13 +8433,12 @@ _$_$ASSET_$_$OPENFL_$_$flixel_$fonts_$monsterrat_$ttf.prototype = $extend(openfl
 });
 Math.__name__ = "Math";
 var Player = function() {
-	flixel_FlxSprite.call(this);
-	this.makeGraphic(20,60,-1);
+	Racket.call(this);
 };
 $hxClasses["Player"] = Player;
 Player.__name__ = "Player";
-Player.__super__ = flixel_FlxSprite;
-Player.prototype = $extend(flixel_FlxSprite.prototype,{
+Player.__super__ = Racket;
+Player.prototype = $extend(Racket.prototype,{
 	__class__: Player
 });
 var Reflect = function() { };
@@ -78021,7 +78067,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 499212;
+	this.version = 257839;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
