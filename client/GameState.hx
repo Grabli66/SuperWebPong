@@ -1,5 +1,4 @@
 import flixel.util.FlxAxes;
-import lime.ui.KeyCode;
 import flixel.FlxG;
 import flixel.FlxState;
 
@@ -11,6 +10,9 @@ class GameState extends FlxState {
 	/// Высота экрана
 	var height = 0;
 
+	/// Текст со счётом
+	var scoreText : flixel.text.FlxText;
+
 	/// Шарик
 	var ball:Ball;
 
@@ -20,20 +22,46 @@ class GameState extends FlxState {
 	/// Игрок 2
 	var enemy:Enemy;
 
+	/// Счёт игрока
+	var playerScore(default, set) = 0;
+
+	/// Счёт противника
+	var enemyScore(default, set) = 0;
+
+	function set_playerScore(v:Int):Int {
+		this.playerScore = v;
+		updateScoreText();
+		return playerScore;
+	}
+
+	function set_enemyScore(v:Int):Int {
+		this.enemyScore = v;
+		updateScoreText();
+		return enemyScore;
+	}
+
+	/// Обновляет отображение
+	function updateScoreText() {
+		scoreText.text = '${playerScore} : ${enemyScore}';
+	}
+
 	/// Двигает шарик
 	function moveBall(elapsed:Float) {
 		ball.x += ball.speedX * elapsed;
 		ball.y += ball.speedY * elapsed;
 
-		// Столокновения со стенами
+		// Столокновения со стенами справа и слева
 		if (ball.x < 0) {
 			ball.x = 0;
 			ball.speedX *= -1;
+			enemyScore += 1;
 		} else if (ball.x + ball.width > width) {
 			ball.x = width - ball.width;
 			ball.speedX *= -1;
+			playerScore += 1;
 		}
-
+		
+		// Столкновение со стенами снизу и сверху
 		if (ball.y < 0) {
 			ball.y = 0;
 			ball.speedY *= -1;
@@ -92,9 +120,10 @@ class GameState extends FlxState {
 		width = FlxG.width;
 		height = FlxG.height;
 
-		var text = new flixel.text.FlxText(0, 0, 0, "0 : 0", 16);
-		text.screenCenter(FlxAxes.X);
-		add(text);
+		scoreText = new flixel.text.FlxText(0, 0, 0, "", 16);
+		scoreText.screenCenter(FlxAxes.X);		
+		add(scoreText);
+		updateScoreText();
 
 		ball = new Ball();
 		ball.x = (width / 2) - ball.width / 2;

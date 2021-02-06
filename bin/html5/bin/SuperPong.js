@@ -893,7 +893,7 @@ ApplicationMain.main = function() {
 ApplicationMain.create = function(config) {
 	var app = new openfl_display_Application();
 	ManifestResources.init(config);
-	app.meta.h["build"] = "14";
+	app.meta.h["build"] = "15";
 	app.meta.h["company"] = "RapidFingers";
 	app.meta.h["file"] = "SuperPong";
 	app.meta.h["name"] = "Super Pong";
@@ -7875,6 +7875,8 @@ flixel_FlxState.prototype = $extend(flixel_group_FlxTypedGroup.prototype,{
 	,__properties__: $extend(flixel_group_FlxTypedGroup.prototype.__properties__,{set_bgColor:"set_bgColor",get_bgColor:"get_bgColor"})
 });
 var GameState = function(MaxSize) {
+	this.enemyScore = 0;
+	this.playerScore = 0;
 	this.height = 0;
 	this.width = 0;
 	flixel_FlxState.call(this,MaxSize);
@@ -7885,9 +7887,25 @@ GameState.__super__ = flixel_FlxState;
 GameState.prototype = $extend(flixel_FlxState.prototype,{
 	width: null
 	,height: null
+	,scoreText: null
 	,ball: null
 	,player: null
 	,enemy: null
+	,playerScore: null
+	,enemyScore: null
+	,set_playerScore: function(v) {
+		this.playerScore = v;
+		this.updateScoreText();
+		return this.playerScore;
+	}
+	,set_enemyScore: function(v) {
+		this.enemyScore = v;
+		this.updateScoreText();
+		return this.enemyScore;
+	}
+	,updateScoreText: function() {
+		this.scoreText.set_text("" + this.playerScore + " : " + this.enemyScore);
+	}
 	,moveBall: function(elapsed) {
 		var _g = this.ball;
 		_g.set_x(_g.x + this.ball.speedX * elapsed);
@@ -7896,9 +7914,13 @@ GameState.prototype = $extend(flixel_FlxState.prototype,{
 		if(this.ball.x < 0) {
 			this.ball.set_x(0);
 			this.ball.speedX *= -1;
+			var _g = this;
+			_g.set_enemyScore(_g.enemyScore + 1);
 		} else if(this.ball.x + this.ball.get_width() > this.width) {
 			this.ball.set_x(this.width - this.ball.get_width());
 			this.ball.speedX *= -1;
+			var _g = this;
+			_g.set_playerScore(_g.playerScore + 1);
 		}
 		if(this.ball.y < 0) {
 			this.ball.set_y(0);
@@ -7957,9 +7979,10 @@ GameState.prototype = $extend(flixel_FlxState.prototype,{
 		this.set_bgColor(3355443);
 		this.width = flixel_FlxG.width;
 		this.height = flixel_FlxG.height;
-		var text = new flixel_text_FlxText(0,0,0,"0 : 0",16);
-		text.screenCenter(flixel_util_FlxAxes.X);
-		this.add(text);
+		this.scoreText = new flixel_text_FlxText(0,0,0,"",16);
+		this.scoreText.screenCenter(flixel_util_FlxAxes.X);
+		this.add(this.scoreText);
+		this.updateScoreText();
 		this.ball = new Ball();
 		this.ball.set_x(this.width / 2 - this.ball.get_width() / 2);
 		this.ball.set_y(this.height / 2 - this.ball.get_height() / 2);
@@ -7988,6 +8011,7 @@ GameState.prototype = $extend(flixel_FlxState.prototype,{
 		flixel_FlxState.prototype.onResize.call(this,width,height);
 	}
 	,__class__: GameState
+	,__properties__: $extend(flixel_FlxState.prototype.__properties__,{set_enemyScore:"set_enemyScore",set_playerScore:"set_playerScore"})
 });
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
@@ -78067,7 +78091,7 @@ var lime_utils_AssetCache = function() {
 	this.audio = new haxe_ds_StringMap();
 	this.font = new haxe_ds_StringMap();
 	this.image = new haxe_ds_StringMap();
-	this.version = 257839;
+	this.version = 251489;
 };
 $hxClasses["lime.utils.AssetCache"] = lime_utils_AssetCache;
 lime_utils_AssetCache.__name__ = "lime.utils.AssetCache";
